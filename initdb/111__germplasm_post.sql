@@ -1,93 +1,4 @@
--- germplasm example JSON
--- [
---   {
---     "accessionNumber": "A0000003",
---     "acquisitionDate": "2024-04-17",
---     "additionalInfo": {
---       "additionalProp1": "string",
---       "additionalProp2": "string",
---       "additionalProp3": "string"
---     },
---     "biologicalStatusOfAccessionCode": "420",
---     "biologicalStatusOfAccessionDescription": "Genetic stock",
---     "breedingMethodDbId": "ffcce7ef",
---     "breedingMethodName": "Male Backcross",
---     "collection": "Rice Diversity Panel 1 (RDP1)",
---     "commonCropName": "Maize",
---     "countryOfOriginCode": "BES",
---     "defaultDisplayName": "A0000003",
---     "documentationURL": "https://wiki.brapi.org",
---     "donors": [
---       {
---         "donorAccessionNumber": "A0000123",
---         "donorInstituteCode": "PER001"
---       }
---     ],
---     "externalReferences": [
---       {
---         "referenceId": "doi:10.155454/12341234",
---         "referenceSource": "DOI"
---       },
---       {
---         "referenceId": "75a50e76",
---         "referenceSource": "Remote Data Collection Upload Tool"
---       }
---     ],
---     "genus": "Aspergillus",
---     "germplasmName": "A0000003",
---     "germplasmOrigin": [
---       {
---         "coordinateUncertainty": "20",
---         "coordinates": {
---           "geometry": {
---             "coordinates": [
---               -76.506042,
---               42.417373,
---               123
---             ],
---             "type": "Point"
---           },
---           "type": "Feature"
---         }
---       }
---     ],
---     "germplasmPUI": "http://pui.per/accession/A0000003",
---     "germplasmPreprocessing": "EO:0007210; transplanted from study 2351 observation unit ID: pot:894",
---     "instituteCode": "PER001",
---     "instituteName": "The BrAPI Institute",
---     "pedigree": "A0000001/A0000002",
---     "seedSource": "INRA:095115_inra",
---     "seedSourceDescription": "Branches were collected from a 10-year-old tree growing in a progeny trial established in a loamy brown earth soil.",
---     "species": "fructus",
---     "speciesAuthority": "Smith, 1822",
---     "storageTypes": [
---       {
---         "code": "20",
---         "description": "Field collection"
---       },
---       {
---         "code": "11",
---         "description": "Short term"
---       }
---     ],
---     "subtaxa": "Aspergillus fructus A",
---     "subtaxaAuthority": "Smith, 1822",
---     "synonyms": [
---       {
---         "synonym": "variety_1",
---         "type": "Pre-Code"
---       }
---     ],
---     "taxonIds": [
---       {
---         "sourceName": "NCBI",
---         "taxonId": "2026747"
---       }
---     ]
---   }
--- ]
 
-DROP TYPE germplasm_request;
 CREATE TYPE germplasm_request as
 (
     "accessionNumber" text,
@@ -142,12 +53,12 @@ CREATE TYPE taxon_request AS (
     "sourceName" text,
     "taxonId" text
 );
-CREATE TYPE xrefrequest AS
-(
-    "id" text,
-    "referenceSource" text,
-    "referenceId" text
-);
+-- CREATE TYPE xrefrequest AS
+-- (
+--     "id" text,
+--     "referenceSource" text,
+--     "referenceId" text
+-- );
 
 CREATE OR REPLACE FUNCTION post_germplasm(germplasm_str text)
     RETURNS VOID AS $$
@@ -277,6 +188,7 @@ BEGIN
             -- TODO: CURSED - remove or refactor as soon as possible. --------------------------------------------------
             -- Create pedigree.
             SELECT gen_random_uuid() INTO node_uuid;
+            -- Create pedigree for the germplasm being inserted.
             INSERT INTO pedigree_node (id, additional_info, auth_user_id, crossing_year, family_code, pedigree_string,
                                        crossing_project_id, germplasm_id)
             VALUES (
@@ -289,7 +201,6 @@ BEGIN
                 null,  -- crossing_project_id
                 germplasm_uuid
            );
-            -- TODO: parse pedigree string, lookup 5 possible identifiers, create node and edge records.
             -- TODO: hardcoded EdgeType (parent=0, child=1, sibling=2)
             -- TODO: hardcoded ParentType (MALE=0, FEMALE=1, SELF=2, POPULATION=3, CLONAL=4)
             -- Female Parent. Germplasm pedigree string is female/male by convention.
@@ -311,7 +222,7 @@ BEGIN
                 ;
                 -- Parents are expected to be created first.
                 IF female_parent_node_uuid IS NULL THEN
-                    RAISE NOTICE 'Expected female parent does not exist: %s.', female_parent;
+                    RAISE EXCEPTION 'Expected female parent does not exist: %s.', female_parent;
                 END IF;
                 -- Create edges (bi-directional) for female parent.
                 INSERT INTO pedigree_edge (id, additional_info, auth_user_id, edge_type, parent_type, connceted_node_id, this_node_id)
@@ -354,7 +265,7 @@ BEGIN
                 ;
                 -- Parents are expected to be created first.
                 IF male_parent_node_uuid IS NULL THEN
-                    RAISE NOTICE 'Expected male parent does not exist: %s.', male_parent;
+                    RAISE EXCEPTION 'Expected male parent does not exist: %s.', male_parent;
                 END IF;
                 -- Create edges (bi-directional) for male parent.
                 INSERT INTO pedigree_edge (id, additional_info, auth_user_id, edge_type, parent_type, connceted_node_id, this_node_id)
@@ -396,23 +307,3 @@ BEGIN
         END LOOP;
 END
 $$ LANGUAGE plpgsql;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

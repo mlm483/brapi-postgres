@@ -49,10 +49,15 @@ def post_programs():
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT post_program(%s);", (request.get_data().decode("utf-8"),))
+            result = cur.fetchone()
+            print(result)
+            return result[0]
 
 
 @app.post("/brapi/v2/germplasm")
 def post_germplasm():
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT post_germplasm(%s);" (request.get_data().decode("utf-8"),))
+            cur.execute("SELECT post_germplasm(%s);", (request.get_data().decode("utf-8"),))
+            result = cur.fetchone()
+            return result
