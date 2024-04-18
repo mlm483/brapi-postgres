@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION search_program(
+CREATE OR REPLACE FUNCTION search_programs(
     abbreviations text[],
     commonCropNames text[],
     externalReferenceIds text[],
@@ -15,32 +15,45 @@ DECLARE
 BEGIN
     RETURN (
         SELECT
-            COALESCE(
-                json_agg(
-                    json_build_object(
-                        'abbreviation', p.abbreviation,
-                        'additionalInfo', p.additional_info,
-                        'commonCropName', c.crop_name,
-                        'documentationURL', p.documentationurl,
-                        'externalReferences', COALESCE((SELECT json_agg(
-                                                                       json_build_object('referenceID', xr.external_reference_id,
-                                                                                         'referenceId', xr.external_reference_id,
-                                                                                         'referenceSource', xr.external_reference_source))
-                                                        FROM program_external_references pxr
-                                                                 LEFT JOIN external_reference xr ON pxr.external_references_id = xr.id
-                                                        WHERE pxr.program_entity_id = p.id), '[]'::json),
-                        'fundingInformation', p.funding_information,
-                        'leadPersonDbId', p.lead_person_id,
-                        'leadPersonName', lp.first_name || ' ' || lp.last_name,
-                        'objective', p.objective,
-                        'programName', p.name,
-                        'programType', CASE
-                                           WHEN p.program_type = 1 THEN 'PROJECT'
-                                           ELSE 'STANDARD' END, -- TODO: ProgramType is hardcoded (STANDARD=0, PROJECT=1)
-                        'programDbId', p.id
-                    )
-                ),
-                '[]'::json
+            json_build_object(
+                    '@context', '[]'::json,
+                    'metadata', '{}'::json,  -- TODO: pagination, count, status, etc.
+                    'result', json_build_object(
+                            'data',
+                            COALESCE(
+                                    json_agg(
+                                            json_build_object(
+                                                    'abbreviation', p.abbreviation,
+                                                    'additionalInfo', p.additional_info,
+                                                    'commonCropName', c.crop_name,
+                                                    'documentationURL', p.documentationurl,
+                                                    'externalReferences', COALESCE((SELECT json_agg(
+                                                                                                   json_build_object(
+                                                                                                           'referenceID',
+                                                                                                           xr.external_reference_id,
+                                                                                                           'referenceId',
+                                                                                                           xr.external_reference_id,
+                                                                                                           'referenceSource',
+                                                                                                           xr.external_reference_source))
+                                                                                    FROM program_external_references pxr
+                                                                                             LEFT JOIN external_reference xr ON pxr.external_references_id = xr.id
+                                                                                    WHERE pxr.program_entity_id = p.id),
+                                                                                   '[]'::json),
+                                                    'fundingInformation', p.funding_information,
+                                                    'leadPersonDbId', p.lead_person_id,
+                                                    'leadPersonName', lp.first_name || ' ' || lp.last_name,
+                                                    'objective', p.objective,
+                                                    'programName', p.name,
+                                                    'programType', CASE
+                                                                       WHEN p.program_type = 1 THEN 'PROJECT'
+                                                                       ELSE 'STANDARD' END, -- TODO: ProgramType is hardcoded (STANDARD=0, PROJECT=1)
+                                                    'programDbId', p.id
+                                            )
+                                    ),
+                                    '[]'::json
+                            )
+                  )
+
             )
             FROM
                 program p

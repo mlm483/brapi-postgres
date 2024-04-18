@@ -22,7 +22,7 @@ CREATE TYPE xrefrequest AS
     "referenceID" text
 );
 
-CREATE OR REPLACE FUNCTION post_program(programs_str text)
+CREATE OR REPLACE FUNCTION post_programs(programs_str text)
 RETURNS json AS $$
 DECLARE
     row record;
@@ -73,7 +73,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN (
-        SELECT * FROM search_program(null, null, null, null, null, null, null, program_db_ids, null, null)
+        SELECT * FROM search_programs(null, null, null, null, null, null, null, program_db_ids, null, null)
     );
 END
 $$ LANGUAGE plpgsql;
