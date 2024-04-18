@@ -70,7 +70,6 @@ FROM
     germplasm_institute gi ON g.id = gi.germplasm_id
         LEFT JOIN
     pedigree_node this_node ON g.id = this_node.germplasm_id
--- TODO: return only germplasm for program based on xref.
 GROUP BY
     g.id, g.germplasm_name, g.accession_number, g.additional_info, g.acquisition_date,
     g.biological_status_of_accession_code, g.breeding_method_id, g.crop_id, g.seed_source,

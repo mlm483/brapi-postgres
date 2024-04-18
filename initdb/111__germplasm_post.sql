@@ -2,9 +2,9 @@
 CREATE TYPE germplasm_request as
 (
     "accessionNumber" text,
-    "acquisitionDate" text,
-    "additionalInfo" text,
-    "biologicalStatusOfAccessionCode" text,
+    "acquisitionDate" timestamp,
+    "additionalInfo" json,
+    "biologicalStatusOfAccessionCode" integer,
     "biologicalStatusOfAccessionDescription" text,
     "breedingMethodDbId" text,
     "breedingMethodName" text,
@@ -297,7 +297,7 @@ BEGIN
                 -- Create external_reference record.
                 INSERT INTO external_reference
                 (id, external_reference_id, external_reference_source)
-                VALUES (xref_id, xref."referenceId", xref."referenceSource");
+                VALUES (xref_id, COALESCE(xref."referenceId", xref."referenceID"), xref."referenceSource");
                 -- Create germplasm_external_references record.
                 INSERT INTO germplasm_external_references
                 (germplasm_entity_id, external_references_id)

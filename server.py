@@ -10,35 +10,7 @@ app = Flask(__name__)
 def get_programs():
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
-            cur.execute(
-                """SELECT
-                    json_build_object(
-                    'abbreviation', p.abbreviation,
-                    'additionalInfo', p.additional_info,
-                    'commonCropName', c.crop_name,
-                    'documentationURL', p.documentationurl,
-                    'externalReferences', COALESCE((SELECT json_agg(
-                                                                json_build_object('referenceID', xr.external_reference_id,
-                                                                                    'referenceId', xr.external_reference_id,
-                                                                                    'referenceSource',
-                                                                                    xr.external_reference_source))
-                                                    FROM program_external_references pxr LEFT JOIN external_reference xr ON pxr.external_references_id = xr.id WHERE pxr.program_entity_id = p.id
-                                                ), '[]'::json),
-                    'fundingInformation', p.funding_information,
-                    'leadPersonDbId', p.lead_person_id,
-                    'leadPersonName', lp.first_name || ' ' || lp.last_name,
-                    'objective', p.objective,
-                    'programName', p.name,
-                    'programType', p.program_type  -- TODO: make text field.
-                    )
-                FROM
-                    program p
-                    LEFT JOIN
-                    crop c ON p.crop_id = c.id
-                    LEFT JOIN
-                    person lp ON p.lead_person_id = lp.id
-                """
-            )
+            cur.execute("SELECT search_program(null, null, null, null, null, null, null, null, null, null);")
             return [dict(program[0]) for program in cur.fetchall()]
 
 
@@ -53,6 +25,12 @@ def post_programs():
             print(result)
             return result[0]
 
+@app.get("/brapi/v2/germplasm")
+def get_germplasm():
+    with psycopg.connect(CONN_STR) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT search_germplasm();")  # TODO: params!
+            return [dict(program[0]) for program in cur.fetchall()]
 
 @app.post("/brapi/v2/germplasm")
 def post_germplasm():
