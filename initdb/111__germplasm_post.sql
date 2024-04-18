@@ -61,7 +61,7 @@ CREATE TYPE taxon_request AS (
 -- );
 
 CREATE OR REPLACE FUNCTION post_germplasm(germplasm_str text)
-    RETURNS VOID AS $$
+    RETURNS json AS $$
 DECLARE
     row record;
     xref record;
@@ -80,6 +80,7 @@ DECLARE
     female_parent_node_uuid text;
     male_parent text;
     male_parent_node_uuid text;
+    germplasm_db_ids text[];
 BEGIN
     SELECT germplasm_str::json INTO germplasm_json;
     FOR row IN SELECT * FROM json_populate_recordset(NULL::germplasm_request, germplasm_json) LOOP
@@ -87,6 +88,7 @@ BEGIN
             SELECT id INTO crop_id FROM crop WHERE crop_name = row."commonCropName";
             -- PK for germplasm.
             SELECT gen_random_uuid() INTO germplasm_uuid;
+            germplasm_db_ids := germplasm_db_ids || germplasm_uuid::text;
 
             -- Create germplasm record.
             INSERT INTO germplasm (id, additional_info, auth_user_id, accession_number, acquisition_date, acquisition_source_code,
@@ -205,7 +207,7 @@ BEGIN
             -- TODO: hardcoded ParentType (MALE=0, FEMALE=1, SELF=2, POPULATION=3, CLONAL=4)
             -- Female Parent. Germplasm pedigree string is female/male by convention.
             SELECT split_part(row."pedigree", '/', 1) INTO female_parent;
-            IF female_parent IS NOT NULL THEN
+            IF (female_parent = '') IS FALSE THEN
                 -- Find female parent germplasm, match on any of id, germplasm_name, accession_number, germplasmpui or synonym.
                 SELECT n.id INTO female_parent_node_uuid
                 FROM
@@ -222,7 +224,7 @@ BEGIN
                 ;
                 -- Parents are expected to be created first.
                 IF female_parent_node_uuid IS NULL THEN
-                    RAISE EXCEPTION 'Expected female parent does not exist: %s.', female_parent;
+                    RAISE EXCEPTION 'Expected female parent does not exist: %.', female_parent;
                 END IF;
                 -- Create edges (bi-directional) for female parent.
                 INSERT INTO pedigree_edge (id, additional_info, auth_user_id, edge_type, parent_type, connceted_node_id, this_node_id)
@@ -248,7 +250,7 @@ BEGIN
             END IF;
             -- Male Parent. Germplasm pedigree string is female/male by convention.
             SELECT split_part(row."pedigree", '/', 2) INTO male_parent;
-            IF male_parent IS NOT NULL THEN
+            IF (male_parent = '') IS FALSE THEN
                 -- Find male parent germplasm, match on any of id, germplasm_name, accession_number, germplasmpui or synonym.
                 SELECT n.id INTO male_parent_node_uuid
                 FROM
@@ -265,7 +267,7 @@ BEGIN
                 ;
                 -- Parents are expected to be created first.
                 IF male_parent_node_uuid IS NULL THEN
-                    RAISE EXCEPTION 'Expected male parent does not exist: %s.', male_parent;
+                    RAISE EXCEPTION 'Expected male parent does not exist: %.', male_parent;
                 END IF;
                 -- Create edges (bi-directional) for male parent.
                 INSERT INTO pedigree_edge (id, additional_info, auth_user_id, edge_type, parent_type, connceted_node_id, this_node_id)
@@ -303,7 +305,10 @@ BEGIN
                 (germplasm_entity_id, external_references_id)
                 VALUES (germplasm_uuid, xref_id);
             END LOOP;
-
         END LOOP;
+
+        RETURN (
+            SELECT * FROM search_germplasm(null, null, null, null, null, null, null, null, germplasm_db_ids, null,null, null, null, null, null, null, null, null, null, null, null, null)
+        );
 END
 $$ LANGUAGE plpgsql;

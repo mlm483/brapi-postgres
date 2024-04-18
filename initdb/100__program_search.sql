@@ -56,9 +56,9 @@ BEGIN
                         SELECT program_entity_id
                         FROM program_external_references pxr JOIN external_reference xr ON pxr.external_references_id = xr.id
                         WHERE external_reference_ids @> ARRAY[xr.external_reference_id] AND external_reference_sources @> ARRAY[xr.external_reference_source]
-                    )
                         )
                     )
+                )
               AND
                 (lead_person_db_ids IS NULL OR lead_person_names @> ARRAY[p.lead_person_id])
               AND
