@@ -31,10 +31,12 @@ DECLARE
     xref_id uuid;
     programs json;
     program_uuid uuid;
+    program_db_ids text[];
 BEGIN
     SELECT programs_str::json INTO programs;
     FOR row IN SELECT * FROM json_populate_recordset(NULL::program_request, programs) LOOP
         SELECT gen_random_uuid() INTO program_uuid;
+        program_db_ids := program_db_ids || program_uuid::text;
         -- Look up crop_id based on commonCropName.
         SELECT id INTO crop_id FROM crop WHERE crop_name = row."commonCropName";
         -- Crop is expected to exist.
@@ -71,7 +73,7 @@ BEGIN
         END LOOP;
     END LOOP;
     RETURN (
-        SELECT * FROM search_program(null, null, null, null, null, null, null, ARRAY[program_uuid::text], null, null)
+        SELECT * FROM search_program(null, null, null, null, null, null, null, program_db_ids, null, null)
     );
 END
 $$ LANGUAGE plpgsql;

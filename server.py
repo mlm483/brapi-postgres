@@ -13,11 +13,8 @@ def get_programs():
             cur.execute("SELECT search_program(null, null, null, null, null, null, null, null, null, null);")
             return [dict(program[0]) for program in cur.fetchall()]
 
-
 @app.post("/brapi/v2/programs")
 def post_programs():
-    print(request.get_data())
-    print(type(request.get_data()))
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT post_program(%s);", (request.get_data().decode("utf-8"),))

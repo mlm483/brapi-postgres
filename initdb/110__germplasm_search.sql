@@ -47,7 +47,7 @@ SELECT json_build_object(
                'germplasmPreprocessing', g.germplasm_preprocessing,
                'instituteCode', gi.institute_code,
                'instituteName', gi.institute_name,
-               'pedigree', COALESCE(this_node.pedigree_string, ''),  -- TODO!
+               'pedigree', COALESCE(this_node.pedigree_string, ''),  -- TODO: is this the best way?
                'seedSource', g.seed_source,
                'seedSourceDescription', g.seed_source_description,
                'species', g.species,
