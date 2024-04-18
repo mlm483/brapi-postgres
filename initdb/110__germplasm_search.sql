@@ -3,10 +3,10 @@ CREATE OR REPLACE FUNCTION search_germplasm(
     binomialNames text[],
     collections text[],
     commonCropNames text[],
-    external_reference_ids text[],
-    external_reference_sources text[],
+    externalReferenceIds text[],
+    externalReferenceSources text[],
     familyCodes text[],
-    genus_list text[],
+    genus_list text[],  -- TODO: make "genus" but handle name ambiguity.
     germplasmDbIds text[],
     germplasmNames text[],
     germplasmPUIs text[],
@@ -15,7 +15,7 @@ CREATE OR REPLACE FUNCTION search_germplasm(
     progenyDbIds text[],
     programDbIds text[],
     programNames text[],
-    species_list text[],
+    species_list text[],  -- TODO: make "species" but handle name ambiguity.
     studyDbIds text[],
     studyNames text[],
     synonyms text[],
@@ -135,15 +135,15 @@ BEGIN
                 (commonCropNames IS NULL OR commonCropNames @> ARRAY[c.crop_name])
                 AND
                 (
-                COALESCE(external_reference_ids, external_reference_sources) IS NULL
+                COALESCE(externalReferenceIds, externalReferenceSources) IS NULL
                 OR
                 (
                 g.id IN
                 (SELECT germplasm_entity_id
                 FROM germplasm_external_references gxr
                          JOIN external_reference xr ON gxr.external_references_id = xr.id
-                WHERE external_reference_ids @> ARRAY[xr.external_reference_id]
-                  AND external_reference_sources @> ARRAY[xr.external_reference_source])
+                WHERE externalReferenceIds @> ARRAY[xr.external_reference_id]
+                  AND externalReferenceSources @> ARRAY[xr.external_reference_source])
                 )
                 )
                 AND
