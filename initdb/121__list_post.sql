@@ -39,9 +39,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION post_lists(lists_str text)
     RETURNS json AS $$
 DECLARE
-    row record;
+    row json;
     xref record;
-    crop_id text;
     xref_id uuid;
     lists json;
     list_uuid uuid;
@@ -59,16 +58,16 @@ BEGIN
         VALUES
             (
             list_uuid,
-            row->->'additionalInfo',
+            row->>'additionalInfo',
             null,  -- auth_user_id
-            row->->'dateCreated',
-            row->->'dateModified',
-            row->->'listDescription',
-            row->->'listName',
-            row->->'listOwnerName',
-            row->->'listSource',
-            list_type_to_int(row->->'listType'),
-            row->->'listOwnerPersonDbId'
+            row->>'dateCreated',
+            row->>'dateModified',
+            row->>'listDescription',
+            row->>'listName',
+            row->>'listOwnerName',
+            row->>'listSource',
+            list_type_to_int(row->>'listType'),
+            row->>'listOwnerPersonDbId'
             );
 
         -- Create xrefs.

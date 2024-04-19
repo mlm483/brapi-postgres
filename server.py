@@ -69,6 +69,18 @@ def get_germplasm():
             return result[0]
 
 
+# TODO: pass params from post body!
+@app.post("/brapi/v2/search/germplasm")
+def search_germplasm():
+    with psycopg.connect(CONN_STR) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "SELECT search_germplasm(null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null);"
+            )  # TODO: params!
+            result = cur.fetchone()
+            return result[0]
+
+
 @app.post("/brapi/v2/germplasm")
 def post_germplasm():
     with psycopg.connect(CONN_STR) as conn:

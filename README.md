@@ -1,5 +1,6 @@
 # brapi-postgres
 A BrAPI server implementation using PostgreSQL as its core technology.
+The very light application code in this repo uses flask.
 
 # Development
 

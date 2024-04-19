@@ -155,14 +155,14 @@ BEGIN
                     SELECT gen_random_uuid() INTO geojson_uuid;
                     SELECT gen_random_uuid() INTO coordinates_uuid;
                     -- Create geojson.
-                    INSERT INTO geojson (id, type) VALUES (geojson_uuid, origin."coordinates"->'geometry'->'coordinates'->->'type');
+                    INSERT INTO geojson (id, type) VALUES (geojson_uuid, origin."coordinates"->'geometry'->'coordinates'->>'type');
                     -- Create coordinate.
                     INSERT INTO coordinate (id, altitude, latitude, longitude, geojson_id)
                     VALUES (
                             coordinates_uuid,
-                            origin."coordinates"->'geometry'->'coordinates'->->2, -- altitude
-                            origin."coordinates"->'geometry'->'coordinates'->->0,  -- latitude
-                            origin."coordinates"->'geometry'->'coordinates'->->1,  -- longitude
+                            origin."coordinates"->'geometry'->'coordinates'->>2, -- altitude
+                            origin."coordinates"->'geometry'->'coordinates'->>0,  -- latitude
+                            origin."coordinates"->'geometry'->'coordinates'->>1,  -- longitude
                             geojson_uuid
                        );
                     -- Create germplasm_origin.
