@@ -40,7 +40,7 @@ CREATE OR REPLACE FUNCTION post_lists(lists_str text)
     RETURNS json AS $$
 DECLARE
     row json;
-    xref record;
+    xref json;
     xref_id uuid;
     lists json;
     list_uuid uuid;
@@ -58,10 +58,10 @@ BEGIN
         VALUES
             (
             list_uuid,
-            row->>'additionalInfo',
+            (row->'additionalInfo')::jsonb,
             null,  -- auth_user_id
-            row->>'dateCreated',
-            row->>'dateModified',
+            CASE WHEN row->>'dateCreated' IS NULL THEN now() ELSE to_timestamp(row->>'dateCreated', 'YYYY-MM-DD"T"HH24:MI:SSZ') END,
+            CASE WHEN row->>'dateModified' IS NULL THEN now() ELSE to_timestamp(row->>'dateModified', 'YYYY-MM-DD"T"HH24:MI:SSZ') END,
             row->>'listDescription',
             row->>'listName',
             row->>'listOwnerName',
@@ -71,11 +71,11 @@ BEGIN
             );
 
         -- Create xrefs.
-        FOR xref IN SELECT * FROM json_populate_recordset(NULL::xrefrequest, row."externalReferences") LOOP
+        FOR xref IN SELECT * FROM json_array_elements(row->'externalReferences') LOOP
             SELECT gen_random_uuid() INTO xref_id;
             -- Create external_reference record.
             INSERT INTO external_reference (id, external_reference_id, external_reference_source)
-            VALUES (xref_id, COALESCE(xref."referenceId", xref."referenceID"), xref."referenceSource");
+            VALUES (xref_id, COALESCE(xref->>'referenceId', xref->>'referenceID'), xref->>'referenceSource');
             -- Create list_external_references record.
             INSERT INTO list_external_references (list_entity_id, external_references_id)
             VALUES (list_uuid, xref_id);

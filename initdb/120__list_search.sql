@@ -50,8 +50,8 @@ BEGIN
                                     json_agg(
                                             json_build_object(
                                                     'additionalInfo', l.additional_info,
-                                                    'dateCreated', l.date_created,
-                                                    'dateModified', l.date_modified,
+                                                    'dateCreated', to_char(l.date_created, 'YYYY-MM-DD"T"HH24:MI:SSZ'),
+                                                    'dateModified', to_char(l.date_modified, 'YYYY-MM-DD"T"HH24:MI:SSZ'),
                                                     'externalReferences', COALESCE((SELECT json_agg(
                                                                                                    json_build_object(
                                                                                                            'referenceID', xr.external_reference_id,
