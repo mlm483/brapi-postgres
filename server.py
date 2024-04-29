@@ -28,11 +28,11 @@ def prepare_body_param(body: dict, key: str | None, fallback: str | None = None)
 
 def get_request_json(request: Request) -> Dict:
     content_type = request.headers.get('Content-Type')
-    if (content_type == 'application/json'):
+    if ('application/json' in content_type):
         json = request.json
         return json
     else:
-        raise Exception('Content-Type not supported!')
+        raise Exception(f'Content-Type "{content_type}" not supported!')
 
 
 @app.get("/brapi/v2/serverinfo")
@@ -190,5 +190,23 @@ def post_lists():
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT post_lists(%s);", (request.get_data().decode("utf-8"),))
+            result = cur.fetchone()
+            return result[0]
+
+
+@app.get("/brapi/v2/germplasm/<germplasmDbId>/progeny")
+def get_progeny(germplasmDbId: str):
+    with psycopg.connect(CONN_STR) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT get_progeny(%s);", (germplasmDbId,))
+            result = cur.fetchone()
+            return result[0]
+
+
+@app.get("/brapi/v2/germplasm/<germplasmDbId>/pedigree")
+def get_progeny(germplasmDbId: str):
+    with psycopg.connect(CONN_STR) as conn:
+        with conn.cursor() as cur:
+            cur.execute("SELECT get_pedigree(%s);", (germplasmDbId,))
             result = cur.fetchone()
             return result[0]
