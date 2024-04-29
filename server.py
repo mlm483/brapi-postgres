@@ -204,7 +204,7 @@ def get_progeny(germplasmDbId: str):
 
 
 @app.get("/brapi/v2/germplasm/<germplasmDbId>/pedigree")
-def get_progeny(germplasmDbId: str):
+def get_pedigree(germplasmDbId: str):
     with psycopg.connect(CONN_STR) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT get_pedigree(%s);", (germplasmDbId,))
