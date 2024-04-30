@@ -68,6 +68,9 @@ BEGIN
                                         pedigree_edge e ON parent_node.id = e.connceted_node_id AND e.edge_type = edge_type_to_int('parent')
                                     WHERE e.this_node_id = pedigree_node_id
                                 )
+                                AND
+                                -- Don't include self in siblings list.
+                                pe.this_node_id != pedigree_node_id
                         ),
                         '[]'::json
                     )
