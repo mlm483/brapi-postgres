@@ -308,7 +308,7 @@ BEGIN
         END LOOP;
 
         RETURN (
-            SELECT * FROM search_germplasm(null, null, null, null, null, null, null, null, germplasm_db_ids, null,null, null, null, null, null, null, null, null, null, null, null, null)
+            SELECT * FROM search_germplasm(null, null, null, null, null, null, null, null, germplasm_db_ids, null, null, null, null, null, null, null, null, null, null, null, null, null)
         );
 END
 $$ LANGUAGE plpgsql;

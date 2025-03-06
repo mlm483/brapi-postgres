@@ -49,7 +49,7 @@ BEGIN
                                                                  WHERE gxr.germplasm_entity_id = g.id), '[]'::json),
                                  'additionalInfo', g.additional_info,
                                  'accessionNumber', g.accession_number,
-                                 'acquisitionDate', g.acquisition_date,
+                                 'acquisitionDate', TO_CHAR(g.acquisition_date, 'YYYY-MM-DD'),
                                  'biologicalStatusOfAccessionCode', g.biological_status_of_accession_code,
                                  'biologicalStatusOfAccessionDescription',
                                  'TODO', -- TODO: store actual text value in database, currently only a java enum.
